@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>面与面的关系</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" type="text/css">
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=5e37dd9c2037288fc824ad57ec23d412"></script>
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <style>
+      html,body,#container{
+        height: 100%
+      }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div class='info'>拖动小多边形可调整位置</div>
+<script type="text/javascript">
+    //初始化地图对象，加载地图
+    var map = new AMap.Map("container", {
+        resizeEnable: true,
+        zoom: 13
+    });
+    var path1 = [
+        [116.51172,39.92123],
+        [116.51135,39.93883],
+        [116.47186,39.91248],
+		[116.51172,39.92123]
+    ]
+    var polygon1 = new AMap.Polygon({
+        map:map,
+        fillColor:'blue',
+        fillOpacity:0.3,
+        path:path1,
+    })
+    var path2 = [
+		[116.51135,39.93883],
+        [116.51627,39.91034],
+        [116.47217,39.92498],
+    ]
+    var polygon2 = new AMap.Polygon({
+        map:map,
+        fillColor:'red',
+        fillOpacity:0.3,
+        path:path2,
+        draggable: true
+    })
+    
+    var textBox = new AMap.Text({
+        map: map,
+        position: new AMap.LngLat(116.51172,39.92123),
+        offset: new AMap.Pixel(-20, -40),
+        style:{
+            'background-color':'yellow',
+            'border':'solid 1px #0088ff',
+            'padding':'10px 20px'
+        }
+    })
+
+    
+    function compute(){
+        var polygon1_path = polygon1.getPath();
+        var polygon2_path = polygon2.getPath();
+        // 小圈是否在大圈内
+        var isRingInRing = AMap.GeometryUtil.isRingInRing(polygon2_path,polygon1_path);
+        // 两圈是否交叉
+        var doesRingRingIntersect = AMap.GeometryUtil.doesRingRingIntersect(polygon2_path,polygon1_path);
+        var ringRingClip = AMap.GeometryUtil.ringRingClip(polygon2_path,polygon1_path);
+        var ringArea = parseInt(AMap.GeometryUtil.ringArea(ringRingClip))
+        
+        var text = '两圈关系：在大圈外';
+        if(isRingInRing){
+            text = '两圈关系：在大圈内';
+        }else if(doesRingRingIntersect){
+            text = '两圈关系：两圈相交, 交叉区域面积为'+ringArea+'平方米';
+        }
+        textBox.setText(text)
+
+
+    }
+    compute();
+    polygon2.on('dragging',compute)
+
+
+    map.setFitView();
+</script>
+</body>
+</html>
